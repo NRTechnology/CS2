@@ -6,6 +6,7 @@ api = Api(app)
 
 
 # ini adalah pertemuan 3
+
 @app.route('/')
 def hello_world():
     return 'Selamat datang'
@@ -15,11 +16,11 @@ def hello_world():
 def admin_page():
     return 'Ini adalah halaman admin'
 
-
 # materi pertemuan 3 berakhir di sini
 
 
 # ini adalah materi pertemuan 4
+
 class HelloWorld(Resource):
     def get(self):
         return {'hello': 'world'}
