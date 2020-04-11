@@ -31,7 +31,7 @@ def admin_page():
 
 class HelloWorld(Resource):
     @staticmethod
-    def get(self):
+    def get():
         return {'hello': 'world'}
 
 
@@ -74,9 +74,10 @@ def get_user():
 
 # materi pertemuan 5 berakhir di sini
 
+# ini adalah materi pertemuan 7
 
 @app.route("/user/<int:id>/", methods=["GET"])
-def get_one_user(id):
+def one_user(id):
     user = User.query.get(id)
     result = user_schema.dump(user)
     return jsonify(result)
@@ -84,7 +85,7 @@ def get_one_user(id):
 
 @app.route("/user/", methods=["POST"])
 def create_user():
-    if not request.json or not 'username' in request.json and not 'email' in request.json:
+    if not request.json or not 'username ' in request.json and not 'email' in request.json:
         abort(400)
 
     user = User(request.json['username'], request.json['email'])
@@ -117,6 +118,8 @@ def delete_user(id):
 
     return jsonify()
 
+
+# materi pertemuan 7 berakhir di sini
 
 if __name__ == '__main__':
     app.run()
