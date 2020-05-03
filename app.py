@@ -14,14 +14,14 @@ ma = Marshmallow(app)
 
 # ini adalah pertemuan 3
 
-@app.route('/')
-def hello_world():
-    return 'Selamat datang'
+# @app.route('/')
+# def hello_world():
+#    return 'Selamat datang'
 
 
-@app.route('/admin/')
-def admin_page():
-    return 'Ini adalah halaman admin'
+# @app.route('/admin/')
+# def admin_page():
+#    return 'Ini adalah halaman admin'
 
 
 # materi pertemuan 3 berakhir di sini
@@ -29,13 +29,13 @@ def admin_page():
 
 # ini adalah materi pertemuan 4
 
-class HelloWorld(Resource):
-    @staticmethod
-    def get():
-        return {'hello': 'world'}
+# class HelloWorld(Resource):
+#    @staticmethod
+#    def get():
+#        return {'hello': 'world'}
 
 
-api.add_resource(HelloWorld, '/helloworld')
+# api.add_resource(HelloWorld, '/helloworld')
 
 
 # materi pertemuan 4 berakhir di sini
@@ -65,61 +65,111 @@ user_schema = UserSchema()
 users_schema = UserSchema(many=True)
 
 
-@app.route("/user/", methods=["GET"])
-def get_user():
-    all_users = User.get_all_users()
-    result = users_schema.dump(all_users)
-    return jsonify(result)
+# @app.route("/user/", methods=["GET"])
+# def get_user():
+#    all_users = User.get_all_users()
+#    result = users_schema.dump(all_users)
+#    return jsonify(result)
 
 
 # materi pertemuan 5 berakhir di sini
 
 # ini adalah materi pertemuan 7
 
-@app.route("/user/<int:id>/", methods=["GET"])
-def one_user(id):
-    user = User.query.get(id)
-    result = user_schema.dump(user)
-    return jsonify(result)
+# @app.route("/user/<int:id>/", methods=["GET"])
+# def one_user(id):
+#    user = User.query.get(id)
+#    result = user_schema.dump(user)
+#    return jsonify(result)
 
 
-@app.route("/user/", methods=["POST"])
-def create_user():
-    if not request.json or not 'username ' in request.json and not 'email' in request.json:
-        abort(400)
+# @app.route("/user/", methods=["POST"])
+# def create_user():
+#    if not request.json or not 'username ' in request.json and not 'email' in request.json:
+#        abort(400)
 
-    user = User(request.json['username'], request.json['email'])
-    db.session.add(user)
-    db.session.commit()
+#    user = User(request.json['username'], request.json['email'])
+#    db.session.add(user)
+#    db.session.commit()
 
-    result = user_schema.dump(user)
-    return jsonify(result)
-
-
-@app.route("/user/<int:id>/", methods=["PUT"])
-def update_user(id):
-    if not request.json or not 'username' in request.json and not 'email' in request.json:
-        abort(400)
-
-    user = User.query.get(id)
-    user.username = request.json['username']
-    user.email = request.json['email']
-    db.session.commit()
-
-    result = user_schema.dump(user)
-    return jsonify(result)
+#    result = user_schema.dump(user)
+#    return jsonify(result)
 
 
-@app.route("/user/<int:id>/", methods=["DELETE"])
-def delete_user(id):
-    user = User.query.get(id)
-    db.session.delete(user)
-    db.session.commit()
+# @app.route("/user/<int:id>/", methods=["PUT"])
+# def update_user(id):
+#    if not request.json or not 'username' in request.json and not 'email' in request.json:
+#        abort(400)
 
-    return jsonify()
+#    user = User.query.get(id)
+#    user.username = request.json['username']
+#    user.email = request.json['email']
+#    db.session.commit()
+
+#    result = user_schema.dump(user)
+#    return jsonify(result)
+
+
+# @app.route("/user/<int:id>/", methods=["DELETE"])
+# def delete_user(id):
+#    user = User.query.get(id)
+#    db.session.delete(user)
+#    db.session.commit()
+
+#    return jsonify()
 
 
 # materi pertemuan 7 berakhir di sini
+
+
+# Materi Pertemuan 8
+
+class UserApi(Resource):
+    def get(self, id=None):
+        if id is not None:
+            user = User.query.get(id)
+            result = user_schema.dump(user)
+            return jsonify(result)
+        else:
+            all_users = User.get_all_users()
+            result = users_schema.dump(all_users)
+            return jsonify(result)
+
+    def post(self):
+        if not request.json or not 'username ' in request.json and not 'email' in request.json:
+            abort(400)
+
+        user = User(request.json['username'], request.json['email'])
+        db.session.add(user)
+        db.session.commit()
+
+        result = user_schema.dump(user)
+        return jsonify(result)
+
+    def put(self, id):
+        if not request.json or not 'username' in request.json and not 'email' in request.json:
+            abort(400)
+
+        user = User.query.get(id)
+        user.username = request.json['username']
+        user.email = request.json['email']
+        db.session.commit()
+
+        result = user_schema.dump(user)
+        return jsonify(result)
+
+    def delete(self, id):
+        user = User.query.get(id)
+        db.session.delete(user)
+        db.session.commit()
+
+        return jsonify()
+
+
+api.add_resource(UserApi, '/user/', '/user/<int:id>/', endpoint='user_ep')
+
+# Materi Pertemuan 8 berakhir di sini
+
 
 if __name__ == '__main__':
     app.run()
