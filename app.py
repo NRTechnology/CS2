@@ -1,8 +1,11 @@
-from flask_restful import Resource, Api
-from flask import Flask, Response, json, jsonify, request, abort
-from flask_migrate import Migrate
-from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, jsonify, request, abort
+from flask_jwt_extended import (
+    JWTManager, create_access_token
+)
 from flask_marshmallow import Marshmallow
+from flask_migrate import Migrate
+from flask_restful import Resource, Api
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 api = Api(app)
@@ -10,6 +13,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://admin:hendrawan@localhost:3306/
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 ma = Marshmallow(app)
+app.config['JWT_SECRET_KEY'] = 'super-secret'  # Change this!
+jwt = JWTManager(app)
 
 
 # ini adalah pertemuan 3
@@ -44,10 +49,12 @@ ma = Marshmallow(app)
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True)
+    password = db.Column(db.String(10), unique=False)
     email = db.Column(db.String(120), unique=True)
 
-    def __init__(self, username, email):
+    def __init__(self, username, password, email):
         self.username = username
+        self.password = password
         self.email = email
 
     @staticmethod
@@ -58,7 +65,7 @@ class User(db.Model):
 class UserSchema(ma.Schema):
     class Meta:
         # Fields to expose
-        fields = ('id', 'username', 'email')
+        fields = ('id', 'username', 'password', 'email')
 
 
 user_schema = UserSchema()
@@ -136,10 +143,10 @@ class UserApi(Resource):
             return jsonify(result)
 
     def post(self):
-        if not request.json or not 'username ' in request.json and not 'email' in request.json:
+        if not request.json or not 'username ' in request.json and not 'password' in request.json and not 'email' in request.json:
             abort(400)
 
-        user = User(request.json['username'], request.json['email'])
+        user = User(request.json['username'], request.json['password'], request.json['email'])
         db.session.add(user)
         db.session.commit()
 
@@ -147,11 +154,12 @@ class UserApi(Resource):
         return jsonify(result)
 
     def put(self, id):
-        if not request.json or not 'username' in request.json and not 'email' in request.json:
+        if not request.json or not 'username' in request.json and not 'password' in request.json and not 'email' in request.json:
             abort(400)
 
         user = User.query.get(id)
         user.username = request.json['username']
+        user.password = request.json['password']
         user.email = request.json['email']
         db.session.commit()
 
@@ -166,9 +174,39 @@ class UserApi(Resource):
         return jsonify()
 
 
-api.add_resource(UserApi, '/user/', '/user/<int:id>/', endpoint='user_ep')
+# api.add_resource(UserApi, '/user/', '/user/<int:id>/', endpoint='user_ep')
 
 # Materi Pertemuan 8 berakhir di sini
+
+
+# Materi Pertemuan 12
+
+@app.route('/login', methods=['POST'])
+def login():
+    if not request.is_json:
+        return jsonify({"msg": "Missing JSON in request"}), 400
+
+    username = request.json.get('username', None)
+    password = request.json.get('password', None)
+
+    login_user = User.query.filter_by(username=username).first()
+    print(login_user.username + " " + username)
+    print(login_user.password + " " + password)
+
+    if not username:
+        return jsonify({"msg": "Missing username parameter"}), 400
+    if not password:
+        return jsonify({"msg": "Missing password parameter"}), 400
+
+    if username != login_user.username or password != login_user.password:   # 1 or 0 = 1 1 and 1 = 1
+        return jsonify({"msg": "Bad username or password"}), 401
+
+    # Identity can be any data that is json serializable
+    access_token = create_access_token(identity=username)
+    return jsonify(access_token=access_token), 200
+
+
+# Materi Pertemuan 12 berakhir di sini
 
 
 if __name__ == '__main__':
