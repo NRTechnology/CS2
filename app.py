@@ -174,7 +174,7 @@ class UserApi(Resource):
         return jsonify()
 
 
-# api.add_resource(UserApi, '/user/', '/user/<int:id>/', endpoint='user_ep')
+api.add_resource(UserApi, '/user/', '/user/<int:id>/', endpoint='user_ep')
 
 # Materi Pertemuan 8 berakhir di sini
 
