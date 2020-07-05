@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request, abort
 from flask_jwt_extended import (
-    JWTManager, create_access_token
+    JWTManager, create_access_token, jwt_required
 )
 from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
@@ -176,6 +176,7 @@ class UserApi(Resource):
 
 api.add_resource(UserApi, '/user/', '/user/<int:id>/', endpoint='user_ep')
 
+
 # Materi Pertemuan 8 berakhir di sini
 
 
@@ -198,7 +199,7 @@ def login():
     if not password:
         return jsonify({"msg": "Missing password parameter"}), 400
 
-    if username != login_user.username or password != login_user.password:   # 1 or 0 = 1 1 and 1 = 1
+    if username != login_user.username or password != login_user.password:  # 1 or 0 = 1 1 and 1 = 1
         return jsonify({"msg": "Bad username or password"}), 401
 
     # Identity can be any data that is json serializable
@@ -208,6 +209,18 @@ def login():
 
 # Materi Pertemuan 12 berakhir di sini
 
+
+# materi pertemuan 13 dan 14
+@app.route('/getuser', methods=['GET'])
+@jwt_required
+def getuser():
+    all_users = User.get_all_users()
+    result = users_schema.dump(all_users)
+
+    return jsonify(result), 200
+
+
+# materi pertemuan 13 dan 14 berakhir di sini
 
 if __name__ == '__main__':
     app.run()
